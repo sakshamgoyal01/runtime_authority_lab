@@ -1,0 +1,12 @@
+title = "Runtime Authority Lab Gitleaks Config"
+
+[allowlist]
+description = "Allow demo/test secrets"
+
+regexes = [
+  '''fallback-dev-secret''',
+  '''fallback-admin-key''',
+  '''admin-secret-key''',
+  '''super-secret-dev-key''',
+  '''dummy-build-secret'''
+]
