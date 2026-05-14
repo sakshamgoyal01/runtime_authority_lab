@@ -1,0 +1,103 @@
+name: Secure CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+
+  security-pipeline:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    # -----------------------------------
+    # Checkout Repository
+    # -----------------------------------
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # -----------------------------------
+    # Gitleaks Secret Scan
+    # -----------------------------------
+    - name: Run Gitleaks
+      uses: gitleaks/gitleaks-action@v2
+
+    # -----------------------------------
+    # Setup Python
+    # -----------------------------------
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    # -----------------------------------
+    # Install Dependencies
+    # -----------------------------------
+    - name: Install Python Dependencies
+      run: |
+        pip install -r app/requirements.txt
+
+    # -----------------------------------
+    # Semgrep SAST Scan
+    # -----------------------------------
+    - name: Run Semgrep
+      run: |
+        pip install semgrep
+
+        semgrep scan \
+        --config auto \
+        app/ \
+        --json \
+        > semgrep-results.json
+
+    # -----------------------------------
+    # Build Docker Image
+    # -----------------------------------
+    - name: Build Docker Image
+      run: |
+        docker build \
+        -t runtime-authority-lab \
+        --build-arg BUILD_SECRET=dummy-build-secret \
+        ./app
+
+    # -----------------------------------
+    # Trivy Container Scan
+    # -----------------------------------
+    - name: Run Trivy Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: runtime-authority-lab
+        format: table
+
+    # -----------------------------------
+    # Generate SBOM
+    # -----------------------------------
+    - name: Generate SBOM
+      run: |
+        docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        anchore/syft runtime-authority-lab \
+        -o spdx-json \
+        > sbom.json
+
+    # -----------------------------------
+    # Upload Security Artifacts
+    # -----------------------------------
+    - name: Upload Scan Reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: |
+          semgrep-results.json
+          sbom.json
