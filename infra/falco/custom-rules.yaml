@@ -1,0 +1,18 @@
+- rule: Terminal Shell In Container
+  desc: Detect shell execution inside container
+
+  condition: >
+    container and
+    shell_procs
+
+  output: >
+    Shell spawned in container
+    (user=%user.name command=%proc.cmdline
+    container=%container.name image=%container.image.repository)
+
+  priority: WARNING
+
+  tags:
+    - container
+    - shell
+    - runtime

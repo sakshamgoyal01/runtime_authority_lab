@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+
+metadata:
+  name: runtime-policy
+  namespace: runtime-lab
+
+spec:
+  podSelector:
+    matchLabels:
+      app: runtime-authority-lab
+
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  - from:
+    - podSelector: {}
+
+  egress:
+  - to:
+    - podSelector: {}

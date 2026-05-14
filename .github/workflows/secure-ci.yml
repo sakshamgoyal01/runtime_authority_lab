@@ -1,21 +1,16 @@
 name: Secure CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
 
   pull_request:
     branches:
       - main
 
-permissions:
-  contents: read
-  security-events: write
-
 jobs:
 
   security-pipeline:
+    permissions:
+      contents: read
 
     runs-on: ubuntu-latest
 
@@ -25,7 +20,7 @@ jobs:
     # Checkout Repository
     # -----------------------------------
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
       with:
         fetch-depth: 0
 
@@ -88,12 +83,9 @@ jobs:
     # Generate SBOM
     # -----------------------------------
     - name: Generate SBOM
-      run: |
-        docker run --rm \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        anchore/syft runtime-authority-lab \
-        -o spdx-json \
-        > sbom.json
+      uses: anchore/sbom-action@v0
+      with:
+        image: runtime-authority-lab
 
     # -----------------------------------
     # Upload Security Artifacts

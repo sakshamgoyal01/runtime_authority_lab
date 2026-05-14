@@ -1,0 +1,22 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  release:
+
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
