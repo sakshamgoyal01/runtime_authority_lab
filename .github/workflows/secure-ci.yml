@@ -26,6 +26,8 @@ jobs:
     # -----------------------------------
     - name: Checkout Code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     # -----------------------------------
     # Gitleaks Secret Scan
